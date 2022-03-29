@@ -12,11 +12,22 @@ export class AnnouncementServices {
         return this.announcementRepository.find()
     }
 
+    async create(data : Announcement){
+        const announcement = this.announcementRepository.create(data)
+        await this.announcementRepository.save(data)
+        return announcement;
+    }
+
     findOne(id:string):Promise<Announcement>{
         return this.announcementRepository.findOne(id)
     }
 
     async remove(id:string):Promise<void>{
         await this.announcementRepository.delete(id)
+    }
+
+    async update(id:number,data : Announcement){
+        await this.announcementRepository.update({id},data)
+        return await this.announcementRepository.findOne({id})
     }
 }

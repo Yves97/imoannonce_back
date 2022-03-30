@@ -1,7 +1,8 @@
-import { Injectable,Inject } from "@nestjs/common";
+import { Injectable,Inject, UploadedFile } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import {Announcement} from "./announcement-entity"
+import { AnnouncementsDTO } from "./announcements.dto";
 
 
 @Injectable()
@@ -12,7 +13,7 @@ export class AnnouncementServices {
         return this.announcementRepository.find()
     }
 
-    async create(data : Announcement){
+    async create(data : AnnouncementsDTO){
         const announcement = this.announcementRepository.create(data)
         await this.announcementRepository.save(data)
         return announcement;

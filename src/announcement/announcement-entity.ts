@@ -1,7 +1,11 @@
-import {Entity,Column,PrimaryGeneratedColumn} from 'typeorm';
+import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn} from 'typeorm';
 
 @Entity()
 export class Announcement { 
+
+    @CreateDateColumn()
+    createDate : Date;
+
     @PrimaryGeneratedColumn()
     id : number;
 
@@ -10,4 +14,8 @@ export class Announcement {
     
     @Column({length : 200})
     description : string;
+
+    @Column({length : 200,nullable : true})
+    image : string;
+
 }

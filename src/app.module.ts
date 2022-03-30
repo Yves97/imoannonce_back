@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {AnnouncementModule} from './announcement/announcement.module'
 import { Announcement } from './announcement/announcement-entity';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -15,7 +16,10 @@ import { Announcement } from './announcement/announcement-entity';
       entities: [Announcement],
       synchronize: true
   }),
-    AnnouncementModule
+    AnnouncementModule,
+    MulterModule.register({
+      dest : './files'
+    })
   ],
 })
 export class AppModule {}

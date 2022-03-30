@@ -1,6 +1,12 @@
-import { Body, Controller, Get, Post, Delete,HttpStatus,Param,Patch } from "@nestjs/common";
+import { Body, Controller, Get, Post, Delete,HttpStatus,Param,Patch, UseInterceptors, UploadedFile, BadRequestException, Res } from "@nestjs/common";
 import { AnnouncementServices } from "./announcement.service";
 import { AnnouncementsDTO } from "./announcements.dto";
+import { Express, Response } from "express";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+// import {ApiBody,ApiConsumes} from '@nestjs/swagger'
+import { Announcement } from "./announcement-entity";
+
 
 @Controller('announcement')
 export class AnnouncementController {
@@ -17,14 +23,50 @@ export class AnnouncementController {
     }
 
     @Post()
-    async createAnnouncement(@Body() announcementData : AnnouncementsDTO){
+    @UseInterceptors(FileInterceptor('image',{
+        storage : diskStorage({
+            destination : './files',
+            filename : (req,file,cb) => {
+                const name = file.originalname.split('.')[0]
+                const fileExtension = file.originalname.split('.')[1]
+                const newFileName = name.split(' ').join('_') + '_' + Date.now() + '.' + fileExtension
+
+                cb(null,newFileName)
+            },
+        }),
+        fileFilter : (req,file,cb) => {
+            if(!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)){
+                return cb(null,false)
+            }
+            cb(null,true)
+        }
+    }))
+    async createAnnouncement(@Body() announcementData : AnnouncementsDTO,@UploadedFile() image : Express.Multer.File){
+ 
+        if(!image){
+            return new BadRequestException('Image inexistante')
+        }
+        const response = {
+            imagePath : `http://localhost:3000/announcement/pictures/${image.filename}`
+        }
         const announcement = await this.announcementservices.create(announcementData)
+        const res = {
+            ...announcement,
+            response
+        }
         return {
             statusCode : HttpStatus.OK,
             message : 'annonce crée avec succès !!',
-            announcement
+            res
         }
     }
+
+    @Get('pictures/:filename')
+    async getImage(@Param('filename') filename,@Res() res : Response){
+        res.sendFile(filename,{root : './files'})
+    }
+
+    
 
     @Get(':id')
     async readAnnouncement(@Param('id') id: string){
@@ -53,4 +95,10 @@ export class AnnouncementController {
             message : 'Annonce supprimée'
         }
     }
+
+    // @Post('upload')
+    // @UseInterceptors(FileInterceptor('file'))
+    // uploadImage(@UploadedFile() file){
+    //     console.log('file==',file)
+    // }
 }

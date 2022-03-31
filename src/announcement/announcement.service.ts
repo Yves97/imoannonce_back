@@ -13,9 +13,15 @@ export class AnnouncementServices {
         return this.announcementRepository.find()
     }
 
-    async create(data : AnnouncementsDTO){
-        const announcement = this.announcementRepository.create(data)
-        await this.announcementRepository.save(data)
+    async create(announcementsDTO : AnnouncementsDTO,file:any){
+        const ann = new Announcement()
+        ann.id = announcementsDTO?.id
+        ann.title = announcementsDTO?.title
+        ann.description = announcementsDTO?.description
+        ann.createDate = announcementsDTO?.createDate
+        ann.image = (file) ? file.filename : ''
+        const announcement = this.announcementRepository.create(ann)
+        await this.announcementRepository.save(ann)
         return announcement;
     }
 

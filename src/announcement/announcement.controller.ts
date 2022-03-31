@@ -4,9 +4,7 @@ import { AnnouncementsDTO } from "./announcements.dto";
 import { Express, Response } from "express";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
-// import {ApiBody,ApiConsumes} from '@nestjs/swagger'
-import { Announcement } from "./announcement-entity";
-
+import {ApiBody,ApiConsumes} from '@nestjs/swagger'
 
 @Controller('announcement')
 export class AnnouncementController {
@@ -41,23 +39,18 @@ export class AnnouncementController {
             cb(null,true)
         }
     }))
+
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({ type: AnnouncementsDTO })
     async createAnnouncement(@Body() announcementData : AnnouncementsDTO,@UploadedFile() image : Express.Multer.File){
- 
         if(!image){
             return new BadRequestException('Image inexistante')
         }
-        const response = {
-            imagePath : `http://localhost:3000/announcement/pictures/${image.filename}`
-        }
-        const announcement = await this.announcementservices.create(announcementData)
-        const res = {
-            ...announcement,
-            response
-        }
+        const announcement = await this.announcementservices.create(announcementData,image)
         return {
             statusCode : HttpStatus.OK,
             message : 'annonce crée avec succès !!',
-            res
+            announcement
         }
     }
 
@@ -66,15 +59,25 @@ export class AnnouncementController {
         res.sendFile(filename,{root : './files'})
     }
 
-    
-
     @Get(':id')
     async readAnnouncement(@Param('id') id: string){
-        const data = await this.announcementservices.findOne(id)
-        return {
-            statusCode : HttpStatus.OK,
-            message : 'Utilisateur trouvé avec success',
-            data
+        try{
+            const data = await this.announcementservices.findOne(id)
+            if(!data){
+                return {
+                    statusCode : HttpStatus.NOT_FOUND,
+                    message : 'Utilisateur non trouvé'   
+                }
+            }
+            return {
+                statusCode : HttpStatus.OK,
+                message : 'Utilisateur trouvé avec success',
+                data
+            }
+        }catch(e){
+            return {
+                statusCode : HttpStatus.INTERNAL_SERVER_ERROR
+            }
         }
     }
 

@@ -10,7 +10,7 @@ export class Announcement {
     @PrimaryGeneratedColumn()
     id : number;
 
-    @Column({type : 'varchar',length : 25,nullable : true})
+    @Column({type : 'varchar',length : 200,nullable : true})
     title : string;
     
     @Column({type : 'varchar',length : 200,nullable : true})

@@ -33,8 +33,12 @@ export class AnnouncementServices {
         await this.announcementRepository.delete(id)
     }
 
-    async update(id:number,data : Announcement){
-        await this.announcementRepository.update({id},data)
+    async update(id:number,announcementsDTO : AnnouncementsDTO,file:any){
+        const ann = new Announcement()
+        ann.title = announcementsDTO?.title
+        ann.description = announcementsDTO?.description
+        ann.image = (file) ? file.filename : ''
+        await this.announcementRepository.update({id},ann)
         return await this.announcementRepository.findOne({id})
     }
 }

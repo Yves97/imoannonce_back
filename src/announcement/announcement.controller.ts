@@ -82,11 +82,30 @@ export class AnnouncementController {
     }
 
     @Patch(':id')
-    async updateAnnouncement(@Param('id') id : number,@Body() data : AnnouncementsDTO){
-        await this.announcementservices.update(id,data)
+    @UseInterceptors(FileInterceptor('image',{
+        storage : diskStorage({
+            destination : './files',
+            filename : (req,file,cb) => {
+                const name = file.originalname.split('.')[0]
+                const fileExtension = file.originalname.split('.')[1]
+                const newFileName = name.split(' ').join('_') + '_' + Date.now() + '.' + fileExtension
+                cb(null,newFileName)
+            },
+        }),
+        fileFilter : (req,file,cb) => {
+            if(!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)){
+                return cb(null,false)
+            }
+            cb(null,true)
+        }
+    }))
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({ type: AnnouncementsDTO })
+    async updateAnnouncement(@Param('id') id : number,@Body() data : AnnouncementsDTO,@UploadedFile() image : Express.Multer.File){
+        await this.announcementservices.update(id,data,image)
         return {
             statusCode : HttpStatus.OK,
-            message : 'Annonce supprimé avec success'
+            message : 'Annonce modifiée avec success'
         }
     }
 
@@ -98,10 +117,4 @@ export class AnnouncementController {
             message : 'Annonce supprimée'
         }
     }
-
-    // @Post('upload')
-    // @UseInterceptors(FileInterceptor('file'))
-    // uploadImage(@UploadedFile() file){
-    //     console.log('file==',file)
-    // }
 }
